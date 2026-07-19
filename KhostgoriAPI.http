@@ -1,0 +1,6 @@
+@KhostgoriAPI_HostAddress = http://localhost:5225
+
+GET {{KhostgoriAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

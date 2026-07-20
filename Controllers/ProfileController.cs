@@ -116,27 +116,21 @@ public class ProfileController : ControllerBase
 
             var fileName = $"{Guid.NewGuid()}.jpg";
             var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "photos");
-
-            if (!Directory.Exists(uploadPath))
-                Directory.CreateDirectory(uploadPath);
-
+            Directory.CreateDirectory(uploadPath);
             var filePath = Path.Combine(uploadPath, fileName);
 
             using var stream = System.IO.File.Create(filePath);
             await photo.CopyToAsync(stream);
 
-            var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Id == userId);
-
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
             if (user == null)
                 return NotFound(new { message = "Пользователь не найден" });
 
-            var profile = await _context.UserProfiles
-                .FirstOrDefaultAsync(p => p.Id == user.ProfileId);
-
+            var profile = await _context.UserProfiles.FirstOrDefaultAsync(p => p.Id == user.ProfileId);
             if (profile == null)
                 return NotFound(new { message = "Профиль не найден" });
 
+            // ⭐ ДОБАВЛЯЕМ ФОТО В СПИСОК
             var existingPhotos = string.IsNullOrEmpty(profile.PhotoPaths)
                 ? new List<string>()
                 : profile.PhotoPaths.Split(',').ToList();
@@ -147,6 +141,7 @@ public class ProfileController : ControllerBase
 
             await _context.SaveChangesAsync();
 
+            // ⭐ ВОЗВРАЩАЕМ ОБНОВЛЁННЫЙ СПИСОК
             return Ok(new
             {
                 fileName = fileName,

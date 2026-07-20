@@ -114,7 +114,6 @@ public class ProfileController : ControllerBase
             if (photo == null || photo.Length == 0)
                 return BadRequest(new { message = "Фото не выбрано" });
 
-            // ⭐ ГЕНЕРИРУЕМ УНИКАЛЬНОЕ ИМЯ
             var fileName = $"{Guid.NewGuid()}.jpg";
             var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "photos");
 
@@ -123,12 +122,36 @@ public class ProfileController : ControllerBase
 
             var filePath = Path.Combine(uploadPath, fileName);
 
-            // ⭐ СОХРАНЯЕМ ФАЙЛ
             using var stream = System.IO.File.Create(filePath);
             await photo.CopyToAsync(stream);
 
-            // ⭐ ВОЗВРАЩАЕМ ИМЯ ФАЙЛА
-            return Ok(new { fileName = fileName });
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null)
+                return NotFound(new { message = "Пользователь не найден" });
+
+            var profile = await _context.UserProfiles
+                .FirstOrDefaultAsync(p => p.Id == user.ProfileId);
+
+            if (profile == null)
+                return NotFound(new { message = "Профиль не найден" });
+
+            var existingPhotos = string.IsNullOrEmpty(profile.PhotoPaths)
+                ? new List<string>()
+                : profile.PhotoPaths.Split(',').ToList();
+
+            existingPhotos.Add(fileName);
+            profile.PhotoPaths = string.Join(",", existingPhotos);
+            profile.UpdatedDate = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                fileName = fileName,
+                photoPaths = profile.PhotoPaths
+            });
         }
         catch (Exception ex)
         {

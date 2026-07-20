@@ -1,11 +1,11 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /app
 
-# Копируем файл проекта
+# Копируем файл проекта (он в корне)
 COPY *.csproj .
 RUN dotnet restore
 
-# Копируем весь код
+# Копируем весь код (он в корне)
 COPY . .
 RUN dotnet publish -c Release -o out
 

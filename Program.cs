@@ -32,6 +32,14 @@ builder.Services.AddMemoryCache();
 // ========== 2. ПОСТРОЕНИЕ ПРИЛОЖЕНИЯ ==========
 var app = builder.Build();
 
+// ⭐ СОЗДАЁМ ПАПКУ ПРИ КАЖДОМ ЗАПУСКЕ
+var photosPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "photos");
+if (!Directory.Exists(photosPath))
+{
+    Directory.CreateDirectory(photosPath);
+    Console.WriteLine($"=== ПАПКА СОЗДАНА: {photosPath} ===");
+}
+
 // ========== 3. МИГРАЦИИ ==========
 try
 {

@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+
 using KhostgoriAPI.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // CORS
@@ -25,14 +27,10 @@ builder.Services.AddControllers();
 // ✅ MemoryCache (ДО Build!)
 builder.Services.AddMemoryCache();
 
-// Swagger (если нужен)
-// builder.Services.AddSwaggerGen();
-// builder.Services.AddEndpointsApiExplorer();
-
-// ========== 2. ПОСТРОЕНИЕ ПРИЛОЖЕНИЯ ==========
+// ========== ПОСТРОЕНИЕ ПРИЛОЖЕНИЯ ==========
 var app = builder.Build();
 
-// ⭐ СОЗДАЁМ ПАПКУ ПРИ КАЖДОМ ЗАПУСКЕ
+// ⭐ СОЗДАЁМ ПАПКУ ДЛЯ ФОТО
 var photosPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "photos");
 if (!Directory.Exists(photosPath))
 {
@@ -40,7 +38,7 @@ if (!Directory.Exists(photosPath))
     Console.WriteLine($"=== ПАПКА СОЗДАНА: {photosPath} ===");
 }
 
-// ========== 3. МИГРАЦИИ ==========
+// ========== МИГРАЦИИ ==========
 try
 {
     using (var scope = app.Services.CreateScope())
@@ -53,19 +51,14 @@ try
 catch (Exception ex)
 {
     Console.WriteLine($"❌ Ошибка при миграции: {ex.Message}");
-    // Не падаем, если миграция не удалась
 }
 
-// ========== 4. SWAGGER ==========
-// if (app.Environment.IsDevelopment())
-// {
-//     app.UseSwagger();
-//     app.UseSwaggerUI();
-// }
+// ========== ⭐ КЛЮЧЕВОЙ МОМЕНТ: ВКЛЮЧАЕМ СТАТИЧЕСКИЕ ФАЙЛЫ ==========
+app.UseStaticFiles(); // ⬅️ БЕЗ ЭТОГО ФОТО НЕ БУДУТ ОТДАВАТЬСЯ!
 
-// ========== 5. MIDDLEWARE ==========
+// ========== MIDDLEWARE ==========
 app.UseCors("AllowAll");
 app.MapControllers();
 
-// ========== 6. ЗАПУСК ==========
+// ========== ЗАПУСК ==========
 app.Run();

@@ -28,16 +28,18 @@ public class ProfileController : ControllerBase
 
             var profile = await _context.UserProfiles
                 .FirstOrDefaultAsync(p => p.Id == user.ProfileId);
+
             if (profile == null)
                 return NotFound(new { message = "Профиль не найден" });
 
-            return Ok(profile);
+            return Ok(profile); // ⬅️ ВОЗВРАЩАЕТ PhotoPaths
         }
         catch (Exception ex)
         {
             return StatusCode(500, new { message = $"Ошибка: {ex.Message}" });
         }
     }
+
     [HttpPut]
     public async Task<IActionResult> UpdateProfile([FromBody] UserProfile profile)
     {

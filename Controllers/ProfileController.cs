@@ -22,10 +22,12 @@ public class ProfileController : ControllerBase
     {
         try
         {
-            // ✅ ВОЗВРАЩАЕМСЯ К РАБОЧЕМУ ВАРИАНТУ
-            var profile = await _context.UserProfiles
-                .FirstOrDefaultAsync(p => p.UserId == userId);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            if (user == null)
+                return NotFound(new { message = "Пользователь не найден" });
 
+            var profile = await _context.UserProfiles
+                .FirstOrDefaultAsync(p => p.Id == user.ProfileId);
             if (profile == null)
                 return NotFound(new { message = "Профиль не найден" });
 

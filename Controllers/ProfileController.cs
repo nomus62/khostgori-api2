@@ -22,12 +22,9 @@ public class ProfileController : ControllerBase
     {
         try
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
-            if (user == null)
-                return NotFound(new { message = "Пользователь не найден" });
-
+            // ✅ ВОЗВРАЩАЕМСЯ К РАБОЧЕМУ ВАРИАНТУ
             var profile = await _context.UserProfiles
-                .FirstOrDefaultAsync(p => p.Id == user.ProfileId);
+                .FirstOrDefaultAsync(p => p.UserId == userId);
 
             if (profile == null)
                 return NotFound(new { message = "Профиль не найден" });
@@ -39,7 +36,6 @@ public class ProfileController : ControllerBase
             return StatusCode(500, new { message = $"Ошибка: {ex.Message}" });
         }
     }
-
     [HttpPut]
     public async Task<IActionResult> UpdateProfile([FromBody] UserProfile profile)
     {

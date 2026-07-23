@@ -1,8 +1,15 @@
 using Microsoft.EntityFrameworkCore;
 
+using Supabase;
 using KhostgoriAPI.Data;
 
+
 var builder = WebApplication.CreateBuilder(args);
+
+// ⭐ ДОБАВЛЯЕМ SUPABASE CLIENT
+var supabaseUrl = builder.Configuration["Supabase:Url"]!;
+var supabaseKey = builder.Configuration["Supabase:Key"]!;
+builder.Services.AddScoped(_ => new Supabase.Client(supabaseUrl, supabaseKey));
 
 // CORS
 builder.Services.AddCors(options =>

@@ -1,0 +1,11 @@
+# Ignore appsettings with secrets
+appsettings.json
+
+# Ignore build artifacts
+bin/
+obj/
+
+# Ignore IDE files
+.vs/
+*.user
+*.suo

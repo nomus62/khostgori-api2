@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-using Supabase;
-
 using KhostgoriAPI.Data;
 using KhostgoriAPI.Models;
 
@@ -34,7 +32,7 @@ public class ProfileController : ControllerBase
             if (profile == null)
                 return NotFound(new { message = "Профиль не найден" });
 
-            return Ok(profile); // ⬅️ ВОЗВРАЩАЕТ PhotoPaths
+            return Ok(profile);
         }
         catch (Exception ex)
         {
@@ -116,31 +114,14 @@ public class ProfileController : ControllerBase
             if (photo == null || photo.Length == 0)
                 return BadRequest(new { message = "Фото не выбрано" });
 
-            // ⭐ ГЕНЕРИРУЕМ УНИКАЛЬНОЕ ИМЯ
-            var fileName = $"u{userId}_{DateTime.Now:yyyyMMdd_HHmmss}_{Guid.NewGuid():N}.jpg";
+            var fileName = $"{Guid.NewGuid()}.jpg";
+            var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "photos");
+            Directory.CreateDirectory(uploadPath);
+            var filePath = Path.Combine(uploadPath, fileName);
 
-            // ⭐ ПОЛУЧАЕМ SUPABASE CLIENT
-            var supabaseClient = HttpContext.RequestServices.GetRequiredService<Supabase.Client>();
+            using var stream = System.IO.File.Create(filePath);
+            await photo.CopyToAsync(stream);
 
-            // ⭐ КОНВЕРТИРУЕМ STREAM В byte[]
-            using var memoryStream = new MemoryStream();
-            await photo.CopyToAsync(memoryStream);
-            var fileBytes = memoryStream.ToArray();
-
-            // ⭐ ЗАГРУЖАЕМ В SUPABASE STORAGE
-            var response = await supabaseClient.Storage
-                .From("photos")
-                .Upload(fileBytes, fileName);
-
-            if (response == null)
-                return StatusCode(500, new { message = "Не удалось загрузить фото в хранилище" });
-
-            // ⭐ ПОЛУЧАЕМ ПУБЛИЧНЫЙ URL
-            var fileUrl = supabaseClient.Storage
-                .From("photos")
-                .GetPublicUrl(fileName);
-
-            // ⭐ СОХРАНЯЕМ URL В БАЗУ
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
             if (user == null)
                 return NotFound(new { message = "Пользователь не найден" });
@@ -149,17 +130,18 @@ public class ProfileController : ControllerBase
             if (profile == null)
                 return NotFound(new { message = "Профиль не найден" });
 
-            // ⭐ ДОБАВЛЯЕМ URL В СПИСОК
+            // ⭐ ДОБАВЛЯЕМ ФОТО В СПИСОК
             var existingPhotos = string.IsNullOrEmpty(profile.PhotoPaths)
                 ? new List<string>()
                 : profile.PhotoPaths.Split(',').ToList();
 
-            existingPhotos.Add(fileUrl);
+            existingPhotos.Add(fileName);
             profile.PhotoPaths = string.Join(",", existingPhotos);
             profile.UpdatedDate = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
 
+            // ⭐ ВОЗВРАЩАЕМ ОБНОВЛЁННЫЙ СПИСОК
             return Ok(new
             {
                 fileName = fileName,

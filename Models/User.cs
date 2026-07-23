@@ -14,9 +14,7 @@ public class User
     public DateTime? LastSeen { get; set; }
 
 
-    // ⭐ НОВЫЕ ПОЛЯ
-    public string? PhoneNumber { get; set; }
-    public bool IsPhoneVerified { get; set; } = false;
-    public string? PhoneVerificationCode { get; set; }
-    public DateTime? PhoneVerificationExpiry { get; set; }
+  //  public bool IsTyping { get; set; } = false;
+   // public int? TypingToUserId { get; set; }
+   // public DateTime? TypingUpdatedAt { get; set; }
 }

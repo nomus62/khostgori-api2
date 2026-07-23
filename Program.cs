@@ -1,15 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-
-using Supabase;
 using KhostgoriAPI.Data;
-
-
 var builder = WebApplication.CreateBuilder(args);
-
-// ⭐ ДОБАВЛЯЕМ SUPABASE CLIENT
-var supabaseUrl = builder.Configuration["Supabase:Url"]!;
-var supabaseKey = builder.Configuration["Supabase:Key"]!;
-builder.Services.AddScoped(_ => new Supabase.Client(supabaseUrl, supabaseKey));
 
 // CORS
 builder.Services.AddCors(options =>
@@ -34,10 +25,14 @@ builder.Services.AddControllers();
 // ✅ MemoryCache (ДО Build!)
 builder.Services.AddMemoryCache();
 
-// ========== ПОСТРОЕНИЕ ПРИЛОЖЕНИЯ ==========
+// Swagger (если нужен)
+// builder.Services.AddSwaggerGen();
+// builder.Services.AddEndpointsApiExplorer();
+
+// ========== 2. ПОСТРОЕНИЕ ПРИЛОЖЕНИЯ ==========
 var app = builder.Build();
 
-// ⭐ СОЗДАЁМ ПАПКУ ДЛЯ ФОТО
+// ⭐ СОЗДАЁМ ПАПКУ ПРИ КАЖДОМ ЗАПУСКЕ
 var photosPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "photos");
 if (!Directory.Exists(photosPath))
 {
@@ -45,7 +40,7 @@ if (!Directory.Exists(photosPath))
     Console.WriteLine($"=== ПАПКА СОЗДАНА: {photosPath} ===");
 }
 
-// ========== МИГРАЦИИ ==========
+// ========== 3. МИГРАЦИИ ==========
 try
 {
     using (var scope = app.Services.CreateScope())
@@ -58,14 +53,19 @@ try
 catch (Exception ex)
 {
     Console.WriteLine($"❌ Ошибка при миграции: {ex.Message}");
+    // Не падаем, если миграция не удалась
 }
 
-// ========== ⭐ КЛЮЧЕВОЙ МОМЕНТ: ВКЛЮЧАЕМ СТАТИЧЕСКИЕ ФАЙЛЫ ==========
-app.UseStaticFiles(); // ⬅️ БЕЗ ЭТОГО ФОТО НЕ БУДУТ ОТДАВАТЬСЯ!
+// ========== 4. SWAGGER ==========
+// if (app.Environment.IsDevelopment())
+// {
+//     app.UseSwagger();
+//     app.UseSwaggerUI();
+// }
 
-// ========== MIDDLEWARE ==========
+// ========== 5. MIDDLEWARE ==========
 app.UseCors("AllowAll");
 app.MapControllers();
 
-// ========== ЗАПУСК ==========
+// ========== 6. ЗАПУСК ==========
 app.Run();

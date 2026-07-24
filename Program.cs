@@ -4,6 +4,8 @@ using KhostgoriAPI.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ⭐ ЯВНО УКАЗЫВАЕМ ПАПКУ WWWROOT
+builder.WebHost.UseWebRoot("wwwroot");
 // CORS
 builder.Services.AddCors(options =>
 {

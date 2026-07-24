@@ -2,10 +2,14 @@ using Microsoft.EntityFrameworkCore;
 
 using KhostgoriAPI.Data;
 
-var builder = WebApplication.CreateBuilder(args);
+// ========== 1. СОЗДАНИЕ BUILDER С ОПЦИЯМИ ==========
+var options = new WebApplicationOptions
+{
+    Args = args,
+    WebRootPath = "wwwroot" // ⬅️ ПРАВИЛЬНОЕ МЕСТО ДЛЯ УКАЗАНИЯ WWWROOT
+};
+var builder = WebApplication.CreateBuilder(options);
 
-// ⭐ ЯВНО УКАЗЫВАЕМ ПАПКУ WWWROOT
-builder.WebHost.UseWebRoot("wwwroot");
 // CORS
 builder.Services.AddCors(options =>
 {
@@ -26,10 +30,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Контроллеры
 builder.Services.AddControllers();
 
-// ✅ MemoryCache
+// MemoryCache
 builder.Services.AddMemoryCache();
 
-// ========== ПОСТРОЕНИЕ ПРИЛОЖЕНИЯ ==========
+// ========== 2. ПОСТРОЕНИЕ ПРИЛОЖЕНИЯ ==========
 var app = builder.Build();
 
 // ⭐ СОЗДАЁМ ПАПКУ ДЛЯ ФОТО
@@ -40,7 +44,7 @@ if (!Directory.Exists(photosPath))
     Console.WriteLine($"=== ПАПКА СОЗДАНА: {photosPath} ===");
 }
 
-// ========== МИГРАЦИИ ==========
+// ========== 3. МИГРАЦИИ ==========
 try
 {
     using (var scope = app.Services.CreateScope())
@@ -55,12 +59,12 @@ catch (Exception ex)
     Console.WriteLine($"❌ Ошибка при миграции: {ex.Message}");
 }
 
-// ========== ⭐ КЛЮЧЕВОЙ МОМЕНТ: ВКЛЮЧАЕМ СТАТИЧЕСКИЕ ФАЙЛЫ ==========
-app.UseStaticFiles(); // ⬅️ БЕЗ ЭТОГО ФОТО НЕ БУДУТ ОТДАВАТЬСЯ!
+// ========== 4. ВКЛЮЧАЕМ СТАТИЧЕСКИЕ ФАЙЛЫ ==========
+app.UseStaticFiles();
 
-// ========== MIDDLEWARE ==========
+// ========== 5. MIDDLEWARE ==========
 app.UseCors("AllowAll");
 app.MapControllers();
 
-// ========== ЗАПУСК ==========
+// ========== 6. ЗАПУСК ==========
 app.Run();
